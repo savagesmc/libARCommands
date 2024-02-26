@@ -5,7 +5,16 @@ OBJS	:= packet-arsdk.o
 TREE	:= tree.h
 GEN	:= ../../../out/arsdk-native/staging-host/usr/lib/arsdkgen/arsdkgen.py
 ARC_GEN := ../Tools/libARCommandsgen.py
-INC	:= -I ../Includes -I ../Sources -I ../../libARNetworkAL/Includes -I ../gen/Includes -I ../../../out/arsdk-native/staging/usr/include/
+INC	:= -I ../Includes -I ../Sources -I ../../libARNetworkAL/Includes -I ../gen/Includes -I ../../../out/arsdk-native/staging/usr/include/ \
+			-I ../../libARSAL/Config/darwin \
+			-I /Users/smclark/repos/wireshark/wireshark-4.2.3 \
+			-I /opt/homebrew/Cellar/wireshark/4.2.3/include/wireshark \
+			-I /opt/homebrew/Cellar/glib/2.78.4/include/glib-2.0 -I /opt/homebrew/Cellar/glib/2.78.4/lib/glib-2.0/include \
+			-I /Users/smclark/repos/samba/librpc/ndr \
+			-I /Users/smclark/repos/samba/lib/talloc \
+			-I /Users/smclark/repos/samba/lib \
+			-I /Users/smclark/repos/samba \
+			-I /Users/smclark/repos/samba/bin/default/
 
 WARN	:= -Wall -W -Wextra -Wdeclaration-after-statement -Wendif-labels \
 	-Wpointer-arith -Wno-pointer-sign -Warray-bounds -Wformat-security \
@@ -23,7 +32,8 @@ STRIP_ARGS :=
 UNAME_S := $(shell uname -s)
 # if platform is on MacOS
 ifeq ($(UNAME_S),Darwin)
-    LDFLAGS += -L/Applications/Wireshark.app/Contents/Resources/lib -lwireshark
+    LDFLAGS += -L/usr/local/lib -lwireshark -lwsutil -L/opt/homebrew/Cellar/glib/2.78.4/lib -L/opt/homebrew/opt/gettext/lib -lglib-2.0 -lintl
+
     STRIP_ARGS += -x
 endif
 # if platform is on Linux
@@ -37,7 +47,7 @@ all: $(PLUGIN)
 .PHONY: .FORCE
 
 $(TREE): .FORCE
-	python $(GEN) $(ARC_GEN) tree
+	python3 $(GEN) $(ARC_GEN) tree
 
 %.o: %.c $(TREE) .FORCE
 	@echo "CC $@"
@@ -46,8 +56,9 @@ $(TREE): .FORCE
 $(PLUGIN): $(OBJS)
 	@echo "CCLD $@"
 	@$(CC) $(LDFLAGS) $^ -o $@
-	@echo "STRIP $@"
-	@strip $(STRIP_ARGS) $@
+
+#	@echo "STRIP $@"
+#	@strip $(STRIP_ARGS) $@
 
 clean:
 	-rm -f $(OBJS) $(TREE) $(PLUGIN)

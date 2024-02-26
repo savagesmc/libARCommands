@@ -5008,6 +5008,8 @@ def dump_arg_table(ftr, cl, cmd):
             table += '    .type = ARSDK_ARG_TYPE_ENUM,\n'
         elif isinstance(arg.argType, ArBitfield):
             table += '    .type = ARSDK_ARG_TYPE_%s,\n' % ArArgType.TO_STRING[arg.argType.btfType].upper()
+        elif isinstance(arg.argType, ArMultiSetting):
+            hasArgOfType[ArArgType.MULTISETTING] = True
         else:
             table += '    .type = ARSDK_ARG_TYPE_%s,\n' % ArArgType.TO_STRING[arg.argType].upper()
         table += '    .enums = %s,\n' % enums
@@ -5184,8 +5186,9 @@ def dump_tree_header(ctx, filename):
     hfile.write ('\n')
 
     # walk XML tree and dump C structures
+    defaultPrj = ArProject('defaultPrj', 0, '')
     for ftr in allFeatures:
-        defaultCls = ArClass('defaultCls', 0, '')
+        defaultCls = ArClass('defaultCls', 0, '', defaultPrj)
         for cmd in ftr.cmds + ftr.evts:
             cl = defaultCls if cmd.cls is None else cmd.cls
             for arg in cmd.args:
