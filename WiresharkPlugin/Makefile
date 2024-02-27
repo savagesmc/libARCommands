@@ -5,7 +5,12 @@ OBJS	:= packet-arsdk.o
 TREE	:= tree.h
 GEN	:= ../../../out/arsdk-native/staging-host/usr/lib/arsdkgen/arsdkgen.py
 ARC_GEN := ../Tools/libARCommandsgen.py
-INC	:= -I ../Includes -I ../Sources -I ../../libARNetworkAL/Includes -I ../gen/Includes -I ../../../out/arsdk-native/staging/usr/include/ \
+INC	:= -I ../Includes \
+			-I ../Sources \
+			-I ../gen/Includes \
+			-I /usr/local/include \
+			-I ../../../out/arsdk-native/staging/usr/include/ \
+			-I ../../libARNetworkAL/Includes \
 			-I ../../libARSAL/Config/darwin \
 			-I /Users/smclark/repos/wireshark/wireshark-4.2.3 \
 			-I /opt/homebrew/Cellar/wireshark/4.2.3/include/wireshark \
@@ -23,6 +28,7 @@ WARN	:= -Wall -W -Wextra -Wdeclaration-after-statement -Wendif-labels \
 	-Wno-overlength-strings -Wwrite-strings -Wno-long-long -Wlogical-op
 
 CFLAGS	:= -g -O2 $(WARN) $(INC) -fPIC -DPIC -DSTANDALONE_BUILD \
+	-DWS_BUILD_DLL \
 	-fexcess-precision=fast -fvisibility=hidden -fwrapv \
 	-fno-strict-overflow -fno-delete-null-pointer-checks
 
@@ -32,8 +38,13 @@ STRIP_ARGS :=
 UNAME_S := $(shell uname -s)
 # if platform is on MacOS
 ifeq ($(UNAME_S),Darwin)
-    LDFLAGS += -L/usr/local/lib -lwireshark -lwsutil -L/opt/homebrew/Cellar/glib/2.78.4/lib -L/opt/homebrew/opt/gettext/lib -lglib-2.0 -lintl
-
+    LDFLAGS += \
+					-L /Users/smclark/repos/wireshark/wireshark-4.2.3/build/run \
+					-L /usr/local/lib \
+					-lwireshark -lwsutil -l smcdebug \
+					-L/opt/homebrew/Cellar/glib/2.78.4/lib \
+					-L/opt/homebrew/opt/gettext/lib \
+					-lglib-2.0 -lintl
     STRIP_ARGS += -x
 endif
 # if platform is on Linux

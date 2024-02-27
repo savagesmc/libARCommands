@@ -34,7 +34,7 @@
 #define DEBUG(...) dbgout(__VA_ARGS__)
 
 // #define SKIP_FRAME_FIELDS
-#define SKIP_COMMAND_FIELDS
+// #define SKIP_COMMAND_FIELDS
 // #define SKIP_PINGPONG_FIELDS
 // #define SKIP_ACK_FIELDS
 // #define SKIP_STREAM_FIELDS
@@ -63,34 +63,11 @@
 #include <epan/value_string.h>
 #include <epan/prefs.h>
 #include <wsutil/wmem/wmem.h>
+#include <dbgout.h>
 #include "protocol.h"
 
 void proto_register_arsdk(void);
 void proto_reg_handoff_arsdk(void);
-
-static int opened = 0;
-static FILE *outFile = 0;
-void dbgout(const char* fmt, ...) {
-   struct timeval tv;
-   struct tm* tm_info;
-   va_list argptr;
-   char s[32768];
-
-   if (!opened)
-   {
-      outFile = fopen("/Users/smclark/arsdk_debug.txt", "w");
-      opened = 1;
-   }
-
-   gettimeofday(&tv, NULL);
-   tm_info = localtime(&tv.tv_sec);
-   strftime(s, sizeof s, "%m/%d/%Y, %H:%M:%S", tm_info);
-   fprintf(outFile, "%s.%06d: ", s, tv.tv_usec);
-   va_start(argptr, fmt);
-   vfprintf(outFile, fmt, argptr);
-   va_end(argptr);
-   fflush(outFile);
-}
 
 static wmem_allocator_t* wmem_pool=0;
 
@@ -1250,13 +1227,13 @@ void proto_register_arsdk(void)
    range_convert_str(wmem_pool, &global_arsdk_port_range, ARSDK_DEFAULT_PORTS, MAX_UDP_PORT);
    DEBUG("range_convert_str - complete\n");
 
-   /*DEBUG("prefs_register_range_preference\n");
+   DEBUG("prefs_register_range_preference\n");
    prefs_register_range_preference(arsdk_module, "udp_ports",
                                    "ARSDK UDP destination port",
                                    "Port numbers used by ARSDK protocol "
                                    "(default " ARSDK_DEFAULT_PORTS ")",
                                    &global_arsdk_port_range, MAX_UDP_PORT);
-   DEBUG("prefs_register_range_preference - complete\n");*/
+   DEBUG("prefs_register_range_preference - complete\n");
 
 }
 
@@ -1322,19 +1299,14 @@ WS_DLL_PUBLIC_DEF const int plugin_want_minor = VERSION_MINOR;
 
 
 /* Start the functions we need for the plugin stuff */
-
 WS_DLL_PUBLIC_DEF void
 plugin_register (void)
 {
-    {extern void proto_register_arsdk (void); proto_register_arsdk ();}
-}
+   static proto_plugin plugin_arsdk;
 
-WS_DLL_PUBLIC_DEF void plugin_reg_handoff(void);
-
-WS_DLL_PUBLIC_DEF void
-plugin_reg_handoff(void)
-{
-    {extern void proto_reg_handoff_arsdk (void); proto_reg_handoff_arsdk ();}
+   plugin_arsdk.register_protoinfo = proto_register_arsdk;
+   plugin_arsdk.register_handoff = proto_reg_handoff_arsdk;
+   proto_register_plugin(&plugin_arsdk);
 }
 
 #endif /* STANDALONE_BUILD */
