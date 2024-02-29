@@ -135,7 +135,14 @@ static void add_field(const header_field_info *info, int *p_id)
 {
    hf_register_info *hf;
 
-   DEBUG("add_field\n");
+   DEBUG("add_field[%d, %d]:  name=%s, abbrev=%s, blurb=%s, %d  %d \n",
+         info->id,
+         *p_id,
+         info->name,
+         info->abbrev,
+         info->blurb,
+         info->type,
+         info->display);
 
    if (hf_arsdk_nitems+1 > hf_arsdk_allocated) {
       DEBUG("add_field - realloc\n");
@@ -149,12 +156,10 @@ static void add_field(const header_field_info *info, int *p_id)
    DEBUG("add_field - assign hf\n");
    hf = &hf_arsdk_info[hf_arsdk_nitems++];
 
-   DEBUG("add_field - memcpy\n");
+   DEBUG("add_field - memcpy   sz == %d\n", sizeof(*info));
    memcpy(&hf->hfinfo, info, sizeof(*info));
-   DEBUG("add_field - p_id\n");
    hf->p_id = p_id;
 
-   DEBUG("added field: name=%s abbrev=%s\n", info->name, info->abbrev);
 }
 
 static int *add_dynamic_field(const header_field_info *info)
@@ -254,7 +259,7 @@ static void add_arg_field(struct arsdk_project *proj,
               (info.type == FT_UINT64)) {
       info.display = BASE_HEX;
    } else if (info.type == FT_STRINGZ) {
-      info.display = STR_ASCII;
+      info.display = BASE_NONE;
    } else {
       info.display = BASE_NONE;
    }
@@ -1198,7 +1203,7 @@ void proto_register_arsdk(void)
    /* Register the protocol name and description */
    DEBUG("proto_register_protocol\n");
    // proto_arsdk = proto_register_protocol("Parrot ARSDK", "ARSDK", "arsdk");
-   proto_arsdk = proto_register_protocol("FOO Protocol", "FOO", "foo");
+   proto_arsdk = proto_register_protocol("ARSDK Protocol", "ARSDK", "arsdk");
    DEBUG("proto_register_protocol - complete : proto_arsdk == %d\n", proto_arsdk);
 
    /* Required function calls to register the header fields and subtrees */
